@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Acuerdos de Pago</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Calculadora de Acuerdos de Pago</h1>
+            <p class="subtitle">Negocia las mejores condiciones para tu cliente</p>
+        </header>
+
+        <!-- Mensaje de Error para Parámetros Faltantes -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <h3>⚠️ Parámetros Faltantes</h3>
+            <p>Para usar esta calculadora, asegúrate de incluir todos los parámetros requeridos en la URL:</p>
+            <ul id="missing-params"></ul>
+            <p><strong>Ejemplo:</strong> <code>index.html?capital=1500000&intereses=300000&costos=150000</code></p>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div id="main-content" style="display: none;">
+            
+            <!-- Sección de Información de Deuda -->
+            <section class="debt-info">
+                <h2>Información de la Deuda</h2>
+                <div class="debt-grid">
+                    <div class="debt-item">
+                        <span class="label">Capital Adeudado:</span>
+                        <span class="value" id="capital-display">$0</span>
+                    </div>
+                    <div class="debt-item">
+                        <span class="label">Intereses a la Fecha:</span>
+                        <span class="value" id="intereses-display">$0</span>
+                    </div>
+                    <div class="debt-item">
+                        <span class="label">Costos de Cobranza:</span>
+                        <span class="value" id="costos-display">$0</span>
+                    </div>
+                    <div class="debt-item total">
+                        <span class="label">Total Adeudado:</span>
+                        <span class="value" id="total-display">$0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Datos Informativos -->
+            <section class="info-data">
+                <h2>Información Adicional</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Fecha Inicio Mora:</span>
+                        <span class="value" id="fecha-inicio-display">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Días en Mora:</span>
+                        <span class="value" id="dias-mora-display">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Valor Cuota Anterior:</span>
+                        <span class="value" id="cuota-anterior-display">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Negociación -->
+            <section class="negotiation">
+                <h2>Opciones de Pago</h2>
+                
+                <!-- Para Deudas Menores a $1M -->
+                <div id="small-debt-options" style="display: none;">
+                    <div class="slider-container">
+                        <label for="installments-slider">Número de Cuotas (máximo 12 meses):</label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="installments-slider" min="1" max="12" value="1">
+                            <span id="installments-value">1 cuota</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Para Deudas Mayores a $1M -->
+                <div id="large-debt-options" style="display: none;">
+                    <div class="payment-options">
+                        <button class="payment-option" data-plan="contado">
+                            <div class="option-header">
+                                <h3>CONTADO</h3>
+                                <span class="discount-badge">30% OFF</span>
+                            </div>
+                            <div class="option-description">Pago inmediato</div>
+                        </button>
+                        
+                        <button class="payment-option" data-plan="6meses">
+                            <div class="option-header">
+                                <h3>6 MESES</h3>
+                                <span class="discount-badge">20% OFF</span>
+                            </div>
+                            <div class="option-description">6 cuotas mensuales</div>
+                        </button>
+                        
+                        <button class="payment-option" data-plan="1año">
+                            <div class="option-header">
+                                <h3>1 AÑO</h3>
+                                <span class="discount-badge">10% OFF</span>
+                            </div>
+                            <div class="option-description">12 cuotas mensuales</div>
+                        </button>
+                        
+                        <button class="payment-option" data-plan="2años">
+                            <div class="option-header">
+                                <h3>2 AÑOS</h3>
+                                <span class="discount-badge">Sin descuento</span>
+                            </div>
+                            <div class="option-description">24 cuotas mensuales</div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Resultados -->
+            <section class="results">
+                <h2>Resumen del Acuerdo</h2>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <span class="label">Capital a Pagar:</span>
+                        <span class="value" id="capital-pagar">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Descuento en Capital:</span>
+                        <span class="value" id="descuento-capital">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Intereses Condonados:</span>
+                        <span class="value" id="intereses-condonados">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Costos Condonados:</span>
+                        <span class="value" id="costos-condonados">$0</span>
+                    </div>
+                    
+                    <div class="result-item total-savings">
+                        <span class="label">Total Ahorrado:</span>
+                        <span class="value" id="total-ahorro">$0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Valor por Cuota:</span>
+                        <span class="value" id="valor-cuota">$0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Número de Cuotas:</span>
+                        <span class="value" id="numero-cuotas">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Botón de Confirmar Acuerdo -->
+            <section class="confirmation">
+                <button id="confirm-agreement" class="confirm-btn" disabled>
+                    <span class="btn-text">Confirmar Acuerdo de Pago</span>
+                    <span class="btn-icon">📋</span>
+                </button>
+                
+                <div id="webhook-status" class="webhook-status" style="display: none;">
+                    <div class="status-message">
+                        <span class="status-icon">✅</span>
+                        <span class="status-text">Acuerdo enviado exitosamente</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="calculator.js"></script>
+</body>
+</html>

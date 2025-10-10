@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Acuerdos de Pago</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos adicionales para versión compacta */
+        .compact-mode {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .compact-mode .container {
+            padding: 5px;
+        }
+        
+        .compact-mode .header {
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 0;
+        }
+        
+        .compact-mode .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.125rem;
+        }
+        
+        .compact-mode .subtitle {
+            font-size: 0.75rem;
+        }
+        
+        .compact-mode section {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .compact-mode section h2 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .compact-mode .debt-grid,
+        .compact-mode .info-grid,
+        .compact-mode .results-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.25rem;
+        }
+        
+        .compact-mode .debt-item,
+        .compact-mode .info-item,
+        .compact-mode .result-item {
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .compact-mode .debt-item .value,
+        .compact-mode .info-item .value,
+        .compact-mode .result-item .value {
+            font-size: 0.9rem;
+        }
+        
+        .compact-mode .payment-options {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .compact-mode .payment-option {
+            padding: 0.75rem;
+        }
+        
+        .compact-mode .option-header h3 {
+            font-size: 1rem;
+        }
+        
+        .compact-mode .discount-badge {
+            font-size: 0.7rem;
+            padding: 0.125rem 0.5rem;
+        }
+        
+        .compact-mode .option-description {
+            font-size: 0.75rem;
+        }
+        
+        .compact-mode .confirm-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+        
+        .compact-mode .confirmation {
+            padding: 0.5rem;
+        }
+        
+        /* Layout horizontal para deuda e info */
+        .compact-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        
+        @media (max-width: 600px) {
+            .compact-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .compact-mode .payment-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .compact-mode .payment-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="compact-mode">
+    <div class="container">
+        <header class="header">
+            <h1>Calculadora de Acuerdos de Pago</h1>
+            <p class="subtitle">Negocia las mejores condiciones para tu cliente</p>
+        </header>
+
+        <!-- Mensaje de Error para Parámetros Faltantes -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <h3>⚠️ Parámetros Faltantes</h3>
+            <p>Incluye los parámetros requeridos en la URL:</p>
+            <ul id="missing-params"></ul>
+            <p><strong>Ejemplo:</strong> <code>?capital=1500000&intereses=300000&costos=150000</code></p>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div id="main-content" style="display: none;">
+            
+            <!-- Layout compacto: Deuda + Info en horizontal -->
+            <div class="compact-layout">
+                <!-- Sección de Información de Deuda -->
+                <section class="debt-info">
+                    <h2>Información de Deuda</h2>
+                    <div class="debt-grid">
+                        <div class="debt-item">
+                            <span class="label">Capital:</span>
+                            <span class="value" id="capital-display">$0</span>
+                        </div>
+                        <div class="debt-item">
+                            <span class="label">Intereses:</span>
+                            <span class="value" id="intereses-display">$0</span>
+                        </div>
+                        <div class="debt-item">
+                            <span class="label">Costos:</span>
+                            <span class="value" id="costos-display">$0</span>
+                        </div>
+                        <div class="debt-item total">
+                            <span class="label">Total:</span>
+                            <span class="value" id="total-display">$0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección de Datos Informativos -->
+                <section class="info-data">
+                    <h2>Datos Adicionales</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="label">Inicio Mora:</span>
+                            <span class="value" id="fecha-inicio-display">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Días Mora:</span>
+                            <span class="value" id="dias-mora-display">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Cuota Anterior:</span>
+                            <span class="value" id="cuota-anterior-display">-</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sección de Negociación -->
+            <section class="negotiation">
+                <h2>Opciones de Pago</h2>
+                
+                <!-- Para Deudas Menores a $1M -->
+                <div id="small-debt-options" style="display: none;">
+                    <div class="slider-container">
+                        <label for="installments-slider">Cuotas (máximo 12 meses):</label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="installments-slider" min="1" max="12" value="1">
+                            <span id="installments-value">1 cuota</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Para Deudas Mayores a $1M -->
+                <div id="large-debt-options" style="display: none;">
+                    <div class="payment-options">
+                        <button class="payment-option" data-plan="contado" data-min-cuotas="1" data-max-cuotas="1">
+                            <div class="option-header">
+                                <h3>CONTADO</h3>
+                                <span class="discount-badge">30% OFF</span>
+                            </div>
+                            <div class="option-description">Pago inmediato</div>
+                        </button>
+                        
+                        <button class="payment-option" data-plan="6meses" data-min-cuotas="2" data-max-cuotas="6">
+                            <div class="option-header">
+                                <h3>6 MESES</h3>
+                                <span class="discount-badge">20% OFF</span>
+                            </div>
+                            <div class="option-description">2-6 cuotas</div>
+                        </button>
+                        
+                        <button class="payment-option" data-plan="1año" data-min-cuotas="7" data-max-cuotas="12">
+                            <div class="option-header">
+                                <h3>1 AÑO</h3>
+                                <span class="discount-badge">10% OFF</span>
+                            </div>
+                            <div class="option-description">7-12 cuotas</div>
+                        </button>
+                        
+                        <button class="payment-option" data-plan="2años" data-min-cuotas="13" data-max-cuotas="24">
+                            <div class="option-header">
+                                <h3>2 AÑOS</h3>
+                                <span class="discount-badge">Sin descuento</span>
+                            </div>
+                            <div class="option-description">13-24 cuotas</div>
+                        </button>
+                    </div>
+                    
+                    <!-- Slider dinámico para opciones seleccionadas -->
+                    <div id="dynamic-slider" class="slider-container" style="display: none;">
+                        <label for="dynamic-installments-slider" id="slider-label">Cuotas:</label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="dynamic-installments-slider" min="1" max="12" value="1">
+                            <span id="dynamic-installments-value">1 cuota</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Resultados -->
+            <section class="results">
+                <h2>Resumen del Acuerdo</h2>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <span class="label">Capital a Pagar:</span>
+                        <span class="value" id="capital-pagar">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Descuento Capital:</span>
+                        <span class="value" id="descuento-capital">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Intereses Condonados:</span>
+                        <span class="value" id="intereses-condonados">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Costos Condonados:</span>
+                        <span class="value" id="costos-condonados">$0</span>
+                    </div>
+                    
+                    <div class="result-item total-savings">
+                        <span class="label">Total Ahorrado:</span>
+                        <span class="value" id="total-ahorro">$0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Valor Cuota:</span>
+                        <span class="value" id="valor-cuota">$0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Número Cuotas:</span>
+                        <span class="value" id="numero-cuotas">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Botón de Confirmar Acuerdo -->
+            <section class="confirmation">
+                <button id="confirm-agreement" class="confirm-btn" disabled>
+                    <span class="btn-text">Confirmar Acuerdo</span>
+                    <span class="btn-icon">📋</span>
+                </button>
+                
+                <div id="webhook-status" class="webhook-status" style="display: none;">
+                    <div class="status-message">
+                        <span class="status-icon">✅</span>
+                        <span class="status-text">Acuerdo enviado exitosamente</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="calculator.js"></script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplos de Prueba - Calculadora</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .example {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .example h3 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .example p {
+            margin: 10px 0;
+        }
+        .url {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            word-break: break-all;
+            border-left: 4px solid #2563eb;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .description {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧮 Calculadora de Acuerdos de Pago - Ejemplos de Prueba</h1>
+    
+    <div class="description">
+        <strong>📋 Instrucciones:</strong> Haz clic en cualquiera de los enlaces de abajo para probar la calculadora con diferentes escenarios. Cada ejemplo simula una situación real de cobranza.
+    </div>
+
+    <div class="example">
+        <h3>🔴 Ejemplo 1: Deuda Pequeña (< $1M)</h3>
+        <p><strong>Escenario:</strong> Cliente con deuda menor a un millón de pesos. Debe pagar el 100% del capital sin descuento, pero puede elegir hasta 12 cuotas.</p>
+        <div class="url">
+            <a href="index.html?capital=500000&intereses=75000&costos=25000&fechaInicio=2024-01-15&diasMora=180&cuotaAnterior=45000" target="_blank">
+                index.html?capital=500000&intereses=75000&costos=25000&fechaInicio=2024-01-15&diasMora=180&cuotaAnterior=45000
+            </a>
+        </div>
+        <p><strong>Resultado esperado:</strong> Slider para elegir cuotas (1-12), sin descuentos aplicables.</p>
+    </div>
+
+    <div class="example">
+        <h3>🟡 Ejemplo 2: Deuda Mediana - Plan Contado</h3>
+        <p><strong>Escenario:</strong> Cliente con deuda mayor a un millón. Opción de pago al contado con 30% de descuento sobre el capital.</p>
+        <div class="url">
+            <a href="index.html?capital=1500000&intereses=300000&costos=150000&fechaInicio=2024-01-15&diasMora=270&cuotaAnterior=125000" target="_blank">
+                index.html?capital=1500000&intereses=300000&costos=150000&fechaInicio=2024-01-15&diasMora=270&cuotaAnterior=125000
+            </a>
+        </div>
+        <p><strong>Resultado esperado:</strong> 4 opciones de pago, destacando el ahorro significativo en la opción "CONTADO".</p>
+    </div>
+
+    <div class="example">
+        <h3>🟢 Ejemplo 3: Deuda Grande - Plan 6 Meses</h3>
+        <p><strong>Escenario:</strong> Cliente con deuda considerable que puede pagar en 6 cuotas con 20% de descuento.</p>
+        <div class="url">
+            <a href="index.html?capital=2500000&intereses=500000&costos=250000&fechaInicio=2023-06-01&diasMora=560&cuotaAnterior=180000" target="_blank">
+                index.html?capital=2500000&intereses=500000&costos=250000&fechaInicio=2023-06-01&diasMora=560&cuotaAnterior=180000
+            </a>
+        </div>
+        <p><strong>Resultado esperado:</strong> Múltiples opciones con diferentes descuentos y plazos.</p>
+    </div>
+
+    <div class="example">
+        <h3>🔵 Ejemplo 4: Deuda Extrema - Plan 2 Años</h3>
+        <p><strong>Escenario:</strong> Cliente con deuda muy alta que necesita el plazo más largo (2 años) sin descuento.</p>
+        <div class="url">
+            <a href="index.html?capital=5000000&intereses=1000000&costos=500000&fechaInicio=2022-12-01&diasMora=800&cuotaAnterior=300000" target="_blank">
+                index.html?capital=5000000&intereses=1000000&costos=500000&fechaInicio=2022-12-01&diasMora=800&cuotaAnterior=300000
+            </a>
+        </div>
+        <p><strong>Resultado esperado:</strong> Opción "2 AÑOS" sin descuento, pero aún condonando intereses y costos.</p>
+    </div>
+
+    <div class="example">
+        <h3>⚠️ Ejemplo 5: Error - Parámetros Faltantes</h3>
+        <p><strong>Escenario:</strong> URL sin parámetros requeridos para ver el manejo de errores.</p>
+        <div class="url">
+            <a href="index.html" target="_blank">
+                index.html
+            </a>
+        </div>
+        <p><strong>Resultado esperado:</strong> Mensaje de error indicando qué parámetros faltan.</p>
+    </div>
+
+    <div class="example">
+        <h3>🧪 Ejemplo 6: Datos Mínimos</h3>
+        <p><strong>Escenario:</strong> Solo con los parámetros requeridos, sin información adicional.</p>
+        <div class="url">
+            <a href="index.html?capital=800000&intereses=120000&costos=80000" target="_blank">
+                index.html?capital=800000&intereses=120000&costos=80000
+            </a>
+        </div>
+        <p><strong>Resultado esperado:</strong> Calculadora funcional con datos informativos mostrando "-".</p>
+    </div>
+
+    <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+        <h3>💡 Consejos para Probar:</h3>
+        <ul>
+            <li><strong>Haz clic en diferentes opciones</strong> para ver cómo cambian los cálculos en tiempo real</li>
+            <li><strong>Prueba el slider</strong> en deudas pequeñas para ver el cambio de cuotas</li>
+            <li><strong>Observa los ahorros</strong> destacados en verde en la sección de resultados</li>
+            <li><strong>Revisa la consola del navegador</strong> (F12) para ver los logs de debug</li>
+            <li><strong>El botón de confirmar</strong> se habilitará solo cuando selecciones una opción</li>
+        </ul>
+    </div>
+
+    <div style="background: #d1ecf1; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #17a2b8;">
+        <h3>🔧 Para Desarrolladores:</h3>
+        <p>Abre la consola del navegador (F12) y ejecuta:</p>
+        <div class="url">
+            <code>window.debugCalculator()</code>
+        </div>
+        <p>Esto mostrará información de debug sobre el estado actual de la calculadora.</p>
+    </div>
+</body>
+</html>

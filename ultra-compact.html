@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Acuerdos de Pago</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos ultra compactos */
+        .ultra-compact {
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 0.85rem;
+        }
+        
+        .ultra-compact .container {
+            padding: 3px;
+        }
+        
+        .ultra-compact .header {
+            margin-bottom: 0.25rem;
+            padding: 0.5rem 0;
+        }
+        
+        .ultra-compact .header h1 {
+            font-size: 1.25rem;
+            margin-bottom: 0.1rem;
+        }
+        
+        .ultra-compact .subtitle {
+            font-size: 0.7rem;
+        }
+        
+        .ultra-compact section {
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .ultra-compact section h2 {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            padding-bottom: 0.1rem;
+        }
+        
+        /* Layout horizontal compacto */
+        .ultra-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .ultra-compact .debt-grid,
+        .ultra-compact .info-grid {
+            grid-template-columns: 1fr;
+            gap: 0.1rem;
+        }
+        
+        .ultra-compact .debt-item,
+        .ultra-compact .info-item {
+            padding: 0.25rem 0.4rem;
+            font-size: 0.75rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.1rem;
+        }
+        
+        .ultra-compact .debt-item .label,
+        .ultra-compact .info-item .label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .ultra-compact .debt-item .value,
+        .ultra-compact .info-item .value {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        /* Opciones de pago ultra compactas */
+        .ultra-compact .payment-options {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.25rem;
+        }
+        
+        .ultra-compact .payment-option {
+            padding: 0.4rem;
+            min-height: 60px;
+        }
+        
+        .ultra-compact .option-header h3 {
+            font-size: 0.8rem;
+            margin-bottom: 0.1rem;
+        }
+        
+        .ultra-compact .discount-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.3rem;
+        }
+        
+        .ultra-compact .option-description {
+            font-size: 0.65rem;
+        }
+        
+        /* Slider compacto */
+        .ultra-compact .slider-container {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        .ultra-compact .slider-container label {
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .ultra-compact .slider-wrapper {
+            gap: 0.5rem;
+        }
+        
+        .ultra-compact #installments-value {
+            font-size: 0.8rem;
+            min-width: 60px;
+        }
+        
+        /* Resultados compactos */
+        .ultra-compact .results-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.1rem;
+        }
+        
+        .ultra-compact .result-item {
+            padding: 0.25rem 0.4rem;
+            font-size: 0.7rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.1rem;
+        }
+        
+        .ultra-compact .result-item .label {
+            font-size: 0.65rem;
+        }
+        
+        .ultra-compact .result-item .value {
+            font-size: 0.75rem;
+        }
+        
+        /* Botón compacto */
+        .ultra-compact .confirm-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            min-width: 120px;
+        }
+        
+        .ultra-compact .confirmation {
+            padding: 0.25rem;
+        }
+        
+        /* Responsive ultra compacto */
+        @media (max-width: 600px) {
+            .ultra-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .ultra-compact .payment-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .ultra-compact .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .ultra-compact .payment-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .ultra-compact .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Ocultar sección de info si no hay datos */
+        .ultra-compact .info-data:has(.info-item .value:contains("-")) {
+            display: none;
+        }
+        
+        /* Estilo para valores importantes */
+        .ultra-compact .total-savings {
+            grid-column: 1 / -1;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="ultra-compact">
+    <div class="container">
+        <header class="header">
+            <h1>Calculadora de Acuerdos</h1>
+            <p class="subtitle">Negocia condiciones</p>
+        </header>
+
+        <!-- Mensaje de Error -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <h3>⚠️ Parámetros Faltantes</h3>
+            <p>Incluye: <code>?capital=1500000&intereses=300000&costos=150000</code></p>
+            <ul id="missing-params"></ul>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div id="main-content" style="display: none;">
+            
+            <!-- Layout ultra compacto -->
+            <div class="ultra-layout">
+                <!-- Deuda -->
+                <section class="debt-info">
+                    <h2>Deuda</h2>
+                    <div class="debt-grid">
+                        <div class="debt-item">
+                            <span class="label">Capital</span>
+                            <span class="value" id="capital-display">$0</span>
+                        </div>
+                        <div class="debt-item">
+                            <span class="label">Intereses</span>
+                            <span class="value" id="intereses-display">$0</span>
+                        </div>
+                        <div class="debt-item">
+                            <span class="label">Costos</span>
+                            <span class="value" id="costos-display">$0</span>
+                        </div>
+                        <div class="debt-item total">
+                            <span class="label">Total</span>
+                            <span class="value" id="total-display">$0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Info (solo si hay datos) -->
+                <section class="info-data" id="info-section">
+                    <h2>Info</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="label">Días</span>
+                            <span class="value" id="dias-mora-display">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Cuota</span>
+                            <span class="value" id="cuota-anterior-display">-</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Opciones de pago -->
+                <section class="negotiation">
+                    <h2>Opciones</h2>
+                    
+                    <!-- Deudas < $1M -->
+                    <div id="small-debt-options" style="display: none;">
+                        <div class="slider-container">
+                            <label>Cuotas:</label>
+                            <div class="slider-wrapper">
+                                <input type="range" id="installments-slider" min="1" max="12" value="1">
+                                <span id="installments-value">1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deudas >= $1M -->
+                    <div id="large-debt-options" style="display: none;">
+                        <div class="payment-options">
+                            <button class="payment-option" data-plan="contado">
+                                <div class="option-header">
+                                    <h3>CONTADO</h3>
+                                    <span class="discount-badge">30%</span>
+                                </div>
+                            </button>
+                            
+                            <button class="payment-option" data-plan="6meses">
+                                <div class="option-header">
+                                    <h3>6 MESES</h3>
+                                    <span class="discount-badge">20%</span>
+                                </div>
+                            </button>
+                            
+                            <button class="payment-option" data-plan="1año">
+                                <div class="option-header">
+                                    <h3>1 AÑO</h3>
+                                    <span class="discount-badge">10%</span>
+                                </div>
+                            </button>
+                            
+                            <button class="payment-option" data-plan="2años">
+                                <div class="option-header">
+                                    <h3>2 AÑOS</h3>
+                                    <span class="discount-badge">0%</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Resultados -->
+            <section class="results">
+                <h2>Resultado</h2>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <span class="label">A Pagar</span>
+                        <span class="value" id="capital-pagar">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Descuento</span>
+                        <span class="value" id="descuento-capital">$0</span>
+                    </div>
+                    
+                    <div class="result-item savings">
+                        <span class="label">Condonado</span>
+                        <span class="value" id="total-condonado">$0</span>
+                    </div>
+                    
+                    <div class="result-item total-savings">
+                        <span class="label">Total Ahorro</span>
+                        <span class="value" id="total-ahorro">$0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Cuota</span>
+                        <span class="value" id="valor-cuota">$0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Plazo</span>
+                        <span class="value" id="numero-cuotas">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Confirmar -->
+            <section class="confirmation">
+                <button id="confirm-agreement" class="confirm-btn" disabled>
+                    <span class="btn-text">Confirmar</span>
+                    <span class="btn-icon">📋</span>
+                </button>
+                
+                <div id="webhook-status" class="webhook-status" style="display: none;">
+                    <div class="status-message">
+                        <span class="status-icon">✅</span>
+                        <span class="status-text">Enviado</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="calculator.js"></script>
+    <script>
+        // Script adicional para ultra compacto
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ocultar sección de info si no hay datos relevantes
+            const infoSection = document.getElementById('info-section');
+            const diasMora = document.getElementById('dias-mora-display');
+            const cuotaAnterior = document.getElementById('cuota-anterior-display');
+            
+            function checkInfoSection() {
+                if (diasMora.textContent === '-' && cuotaAnterior.textContent === '-') {
+                    infoSection.style.display = 'none';
+                } else {
+                    infoSection.style.display = 'block';
+                }
+            }
+            
+            // Crear observer para cambios en los valores
+            const observer = new MutationObserver(checkInfoSection);
+            observer.observe(diasMora, { childList: true, subtree: true });
+            observer.observe(cuotaAnterior, { childList: true, subtree: true });
+            
+            // Actualizar resultado de total condonado
+            const originalUpdateResults = window.calculator?.updateResultsDisplay;
+            if (window.calculator) {
+                const originalMethod = window.calculator.updateResultsDisplay;
+                window.calculator.updateResultsDisplay = function(results) {
+                    originalMethod.call(this, results);
+                    
+                    // Actualizar total condonado
+                    const totalCondonado = results.interesesCondonados + results.costosCondonados;
+                    const totalCondonadoElement = document.getElementById('total-condonado');
+                    if (totalCondonadoElement) {
+                        totalCondonadoElement.textContent = this.formatCurrency(totalCondonado);
+                    }
+                };
+            }
+        });
+    </script>
+</body>
+</html>

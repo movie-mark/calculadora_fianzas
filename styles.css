@@ -1,0 +1,510 @@
+/* Reset y Variables CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Colores INSURATECH */
+    --primary-color: #22c55e;
+    --primary-hover: #16a34a;
+    --secondary-color: #f59e0b;
+    --secondary-hover: #d97706;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --accent-green: #22c55e;
+    --accent-orange: #f59e0b;
+    
+    /* Grises INSURATECH */
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --white: #ffffff;
+    
+    /* Bordes y sombras */
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--gray-800);
+    background-color: var(--gray-100);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 1rem 0;
+    background: var(--white);
+    color: var(--gray-800);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--gray-900);
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-weight: 400;
+}
+
+/* Mensaje de Error */
+.error-message {
+    background-color: var(--error-color);
+    color: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.error-message h3 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.error-message ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.error-message code {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', monospace;
+}
+
+/* Secciones */
+section {
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+section h2 {
+    color: var(--gray-800);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid var(--accent-green);
+    padding-bottom: 0.25rem;
+}
+
+/* Grids */
+.debt-grid,
+.info-grid,
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.debt-item,
+.info-item,
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--gray-50);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.debt-item:hover,
+.info-item:hover,
+.result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.debt-item.total,
+.result-item.total-savings {
+    background: var(--accent-green);
+    color: var(--white);
+    font-weight: 600;
+}
+
+.result-item.savings {
+    background: var(--accent-green);
+    color: var(--white);
+    font-weight: 500;
+}
+
+.debt-item .label,
+.info-item .label,
+.result-item .label {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.debt-item.total .label,
+.result-item.total-savings .label,
+.result-item.savings .label {
+    color: var(--white);
+}
+
+.debt-item .value,
+.info-item .value,
+.result-item .value {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--gray-900);
+}
+
+.debt-item.total .value,
+.result-item.total-savings .value,
+.result-item.savings .value {
+    color: var(--white);
+}
+
+/* Opciones de Pago */
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.payment-option {
+    background: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-option:hover {
+    border-color: var(--accent-green);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.payment-option.selected {
+    border-color: var(--accent-green);
+    background: var(--accent-green);
+    color: var(--white);
+}
+
+.payment-option.selected .discount-badge {
+    background-color: var(--success-color);
+}
+
+.option-header {
+    margin-bottom: 0.5rem;
+}
+
+.option-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.discount-badge {
+    display: inline-block;
+    background-color: var(--accent-orange);
+    color: var(--white);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.option-description {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.payment-option.selected .option-description {
+    color: var(--white);
+}
+
+/* Slider */
+.slider-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.slider-container label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--gray-700);
+}
+
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#installments-slider {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--gray-200);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+#installments-slider::-webkit-slider-thumb,
+#dynamic-installments-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.2s ease;
+}
+
+#installments-slider::-webkit-slider-thumb:hover,
+#dynamic-installments-slider::-webkit-slider-thumb:hover {
+    background: var(--primary-hover);
+    transform: scale(1.1);
+}
+
+#installments-slider::-moz-range-thumb,
+#dynamic-installments-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    cursor: pointer;
+    border: none;
+    box-shadow: var(--shadow);
+}
+
+#installments-value,
+#dynamic-installments-value {
+    min-width: 100px;
+    font-weight: 600;
+    color: var(--accent-green);
+    font-size: 1.125rem;
+}
+
+/* Botón de Confirmación */
+.confirmation {
+    text-align: center;
+    padding: 1rem;
+}
+
+.confirm-btn {
+    background: var(--accent-green);
+    color: var(--white);
+    border: none;
+    border-radius: var(--border-radius-lg);
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: var(--shadow-lg);
+    min-width: 200px;
+    justify-content: center;
+}
+
+.confirm-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.confirm-btn:disabled {
+    background: var(--gray-400);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-icon {
+    font-size: 1.25rem;
+}
+
+/* Status del Webhook */
+.webhook-status {
+    margin-top: 1rem;
+}
+
+.status-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--success-color);
+    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+}
+
+.status-icon {
+    font-size: 1.25rem;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+section {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 0.5rem;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .header .subtitle {
+        font-size: 0.75rem;
+    }
+    
+    section {
+        padding: 0.75rem;
+    }
+    
+    .debt-grid,
+    .info-grid,
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .slider-wrapper {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    #installments-value {
+        min-width: auto;
+    }
+    
+    .confirm-btn {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .header h1 {
+        font-size: 1.25rem;
+    }
+    
+    section {
+        padding: 0.5rem;
+    }
+    
+    .debt-item,
+    .info-item,
+    .result-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.25rem;
+        padding: 0.5rem;
+    }
+    
+    .payment-option {
+        padding: 0.75rem;
+    }
+    
+    .option-header h3 {
+        font-size: 1rem;
+    }
+    
+    .payment-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Utilidades */
+.text-center {
+    text-align: center;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-green {
+    color: var(--success-color);
+}
+
+.text-red {
+    color: var(--error-color);
+}
+
+.mb-1 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 1rem;
+}
+
+.mb-3 {
+    margin-bottom: 1.5rem;
+}
