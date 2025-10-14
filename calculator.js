@@ -13,7 +13,6 @@ class PaymentAgreementCalculator {
         this.loadUrlParameters();
         this.setupEventListeners();
         this.renderInterface();
-        this.updateCalculations();
     }
 
     // Cargar parámetros de la URL
@@ -110,26 +109,11 @@ class PaymentAgreementCalculator {
     // Renderizar interfaz según el tipo de deuda
     renderInterface() {
         const totalDebt = this.debtData.capital + this.debtData.intereses + this.debtData.costos;
-        console.log('Total debt:', totalDebt, 'Debt data:', this.debtData);
         
         if (totalDebt >= 1000000) {
             // Deuda mayor o igual a $1M - mostrar opciones de descuento
             document.getElementById('large-debt-options').style.display = 'block';
             document.getElementById('small-debt-options').style.display = 'none';
-            
-            // Seleccionar automáticamente el plan "1año" por defecto
-            this.selectedPlan = '1año';
-            this.installments = 12; // 12 cuotas para 1 año
-            
-            // Marcar visualmente la opción seleccionada
-            const selectedOption = document.querySelector('[data-plan="1año"]');
-            if (selectedOption) {
-                selectedOption.classList.add('selected');
-            }
-            
-            // Configurar slider dinámico
-            this.setupDynamicSlider('1año', 12, 12);
-            
         } else {
             // Deuda menor a $1M - mostrar slider de cuotas
             document.getElementById('large-debt-options').style.display = 'none';
@@ -140,9 +124,6 @@ class PaymentAgreementCalculator {
         // Mostrar información de deuda
         this.displayDebtInfo();
         this.displayAdditionalInfo();
-        
-        // Actualizar cálculos después de configurar el plan
-        this.updateCalculations();
     }
 
     // Mostrar información de deuda
@@ -177,37 +158,20 @@ class PaymentAgreementCalculator {
 
         this.selectedPlan = plan;
         
-        // Configurar slider dinámico
-        this.setupDynamicSlider(plan, minCuotas, maxCuotas);
+        // Configurar número de cuotas según el plan
+        const planCuotas = {
+            'contado': 1,
+            '6meses': 6,
+            '1año': 12,
+            '2años': 24
+        };
+        
+        this.installments = planCuotas[plan] || 1;
+        
         this.updateCalculations();
         this.enableConfirmButton();
     }
 
-    // Configurar slider dinámico
-    setupDynamicSlider(plan, minCuotas, maxCuotas) {
-        const dynamicSlider = document.getElementById('dynamic-installments-slider');
-        const dynamicSliderContainer = document.getElementById('dynamic-slider');
-        const sliderLabel = document.getElementById('slider-label');
-        
-        if (plan === 'contado') {
-            // Contado: no mostrar slider
-            dynamicSliderContainer.style.display = 'none';
-            this.installments = 1;
-        } else {
-            // Mostrar slider con rango específico
-            dynamicSliderContainer.style.display = 'block';
-            dynamicSlider.min = minCuotas;
-            dynamicSlider.max = maxCuotas;
-            dynamicSlider.value = minCuotas;
-            this.installments = minCuotas;
-            
-            // Actualizar label
-            sliderLabel.textContent = `Cuotas (${minCuotas}-${maxCuotas}):`;
-            
-            // Actualizar display
-            this.updateDynamicInstallmentsDisplay();
-        }
-    }
 
     // Actualizar display del slider
     updateInstallmentsDisplay() {
@@ -217,21 +181,10 @@ class PaymentAgreementCalculator {
         }
     }
 
-    // Actualizar display del slider dinámico
-    updateDynamicInstallmentsDisplay() {
-        const value = document.getElementById('dynamic-installments-value');
-        if (value) {
-            value.textContent = `${this.installments} ${this.installments === 1 ? 'cuota' : 'cuotas'}`;
-        }
-    }
 
     // Actualizar cálculos
     updateCalculations() {
-        console.log('updateCalculations called, selectedPlan:', this.selectedPlan);
-        if (!this.selectedPlan) {
-            console.log('No plan selected, returning');
-            return;
-        }
+        if (!this.selectedPlan) return;
 
         let capitalToPay = this.debtData.capital;
         let discountAmount = 0;
