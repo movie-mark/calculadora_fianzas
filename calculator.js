@@ -115,6 +115,20 @@ class PaymentAgreementCalculator {
             // Deuda mayor o igual a $1M - mostrar opciones de descuento
             document.getElementById('large-debt-options').style.display = 'block';
             document.getElementById('small-debt-options').style.display = 'none';
+            
+            // Seleccionar automáticamente el plan "1año" por defecto
+            this.selectedPlan = '1año';
+            this.installments = 12; // 12 cuotas para 1 año
+            
+            // Marcar visualmente la opción seleccionada
+            const selectedOption = document.querySelector('[data-plan="1año"]');
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+            
+            // Configurar slider dinámico
+            this.setupDynamicSlider('1año', 12, 12);
+            
         } else {
             // Deuda menor a $1M - mostrar slider de cuotas
             document.getElementById('large-debt-options').style.display = 'none';
@@ -125,6 +139,9 @@ class PaymentAgreementCalculator {
         // Mostrar información de deuda
         this.displayDebtInfo();
         this.displayAdditionalInfo();
+        
+        // Actualizar cálculos después de configurar el plan
+        this.updateCalculations();
     }
 
     // Mostrar información de deuda
