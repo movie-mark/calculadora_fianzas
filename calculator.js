@@ -110,6 +110,7 @@ class PaymentAgreementCalculator {
     // Renderizar interfaz según el tipo de deuda
     renderInterface() {
         const totalDebt = this.debtData.capital + this.debtData.intereses + this.debtData.costos;
+        console.log('Total debt:', totalDebt, 'Debt data:', this.debtData);
         
         if (totalDebt >= 1000000) {
             // Deuda mayor o igual a $1M - mostrar opciones de descuento
@@ -226,7 +227,11 @@ class PaymentAgreementCalculator {
 
     // Actualizar cálculos
     updateCalculations() {
-        if (!this.selectedPlan) return;
+        console.log('updateCalculations called, selectedPlan:', this.selectedPlan);
+        if (!this.selectedPlan) {
+            console.log('No plan selected, returning');
+            return;
+        }
 
         let capitalToPay = this.debtData.capital;
         let discountAmount = 0;
