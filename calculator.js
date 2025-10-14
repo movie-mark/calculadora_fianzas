@@ -158,18 +158,44 @@ class PaymentAgreementCalculator {
 
         this.selectedPlan = plan;
         
-        // Configurar número de cuotas según el plan
-        const planCuotas = {
-            'contado': 1,
-            '6meses': 6,
-            '1año': 12,
-            '2años': 24
-        };
-        
-        this.installments = planCuotas[plan] || 1;
-        
+        // Configurar slider dinámico
+        this.setupDynamicSlider(plan, minCuotas, maxCuotas);
         this.updateCalculations();
         this.enableConfirmButton();
+    }
+
+    // Configurar slider dinámico
+    setupDynamicSlider(plan, minCuotas, maxCuotas) {
+        const dynamicSlider = document.getElementById('dynamic-installments-slider');
+        const dynamicSliderContainer = document.getElementById('dynamic-slider');
+        const sliderLabel = document.getElementById('slider-label');
+        
+        if (plan === 'contado') {
+            // Contado: no mostrar slider
+            dynamicSliderContainer.style.display = 'none';
+            this.installments = 1;
+        } else {
+            // Mostrar slider con rango específico
+            dynamicSliderContainer.style.display = 'block';
+            dynamicSlider.min = minCuotas;
+            dynamicSlider.max = maxCuotas;
+            dynamicSlider.value = minCuotas;
+            this.installments = minCuotas;
+            
+            // Actualizar label
+            sliderLabel.textContent = `Cuotas (${minCuotas}-${maxCuotas}):`;
+            
+            // Actualizar display
+            this.updateDynamicInstallmentsDisplay();
+        }
+    }
+
+    // Actualizar display del slider dinámico
+    updateDynamicInstallmentsDisplay() {
+        const value = document.getElementById('dynamic-installments-value');
+        if (value) {
+            value.textContent = `${this.installments} ${this.installments === 1 ? 'cuota' : 'cuotas'}`;
+        }
     }
 
 

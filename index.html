@@ -84,7 +84,7 @@
                 <!-- Para Deudas Mayores a $1M -->
                 <div id="large-debt-options" style="display: none;">
                     <div class="payment-options">
-                        <button class="payment-option" data-plan="contado">
+                        <button class="payment-option" data-plan="contado" data-min-cuotas="1" data-max-cuotas="1">
                             <div class="option-header">
                                 <h3>CONTADO</h3>
                                 <span class="discount-badge">30% OFF</span>
@@ -92,7 +92,7 @@
                             <div class="option-description">Pago inmediato</div>
                         </button>
                         
-                        <button class="payment-option" data-plan="6meses">
+                        <button class="payment-option" data-plan="6meses" data-min-cuotas="6" data-max-cuotas="6">
                             <div class="option-header">
                                 <h3>6 MESES</h3>
                                 <span class="discount-badge">20% OFF</span>
@@ -100,7 +100,7 @@
                             <div class="option-description">6 cuotas mensuales</div>
                         </button>
                         
-                        <button class="payment-option" data-plan="1año">
+                        <button class="payment-option" data-plan="1año" data-min-cuotas="12" data-max-cuotas="12">
                             <div class="option-header">
                                 <h3>1 AÑO</h3>
                                 <span class="discount-badge">10% OFF</span>
@@ -108,13 +108,24 @@
                             <div class="option-description">12 cuotas mensuales</div>
                         </button>
                         
-                        <button class="payment-option" data-plan="2años">
+                        <button class="payment-option" data-plan="2años" data-min-cuotas="24" data-max-cuotas="24">
                             <div class="option-header">
                                 <h3>2 AÑOS</h3>
                                 <span class="discount-badge">Sin descuento</span>
                             </div>
                             <div class="option-description">24 cuotas mensuales</div>
                         </button>
+                    </div>
+                    
+                    <!-- Slider dinámico para ajustar cuotas -->
+                    <div id="dynamic-slider" style="display: none;">
+                        <div class="slider-container">
+                            <label id="slider-label">Cuotas:</label>
+                            <div class="slider-wrapper">
+                                <input type="range" id="dynamic-installments-slider" min="1" max="24" value="12">
+                                <span id="dynamic-installments-value">12 cuotas</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
