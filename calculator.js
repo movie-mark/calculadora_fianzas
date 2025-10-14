@@ -221,8 +221,7 @@ class PaymentAgreementCalculator {
             const discounts = {
                 'contado': { discount: 0.30 },
                 '6meses': { discount: 0.20 },
-                '1año': { discount: 0.10 },
-                '2años': { discount: 0.00 }
+                '1año': { discount: 0.10 }
             };
 
             const planData = discounts[this.selectedPlan];
@@ -329,8 +328,7 @@ class PaymentAgreementCalculator {
             const discounts = {
                 'contado': { discount: 0.30, name: 'Contado' },
                 '6meses': { discount: 0.20, name: '6 Meses' },
-                '1año': { discount: 0.10, name: '1 Año' },
-                '2años': { discount: 0.00, name: '2 Años' }
+                '1año': { discount: 0.10, name: '1 Año' }
             };
 
             const planData = discounts[this.selectedPlan];
