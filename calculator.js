@@ -4,15 +4,44 @@ class PaymentAgreementCalculator {
         this.debtData = {};
         this.selectedPlan = null;
         this.installments = 1;
-        this.webhookUrl = 'https://tu-webhook-n8n.com/webhook/acuerdos-pago'; // Configurar aquí la URL del webhook
+        this.webhookUrl = null; // Se cargará desde el API route
         
         this.init();
     }
 
-    init() {
+    async init() {
+        // Cargar configuración del webhook primero
+        await this.loadWebhookConfig();
+        
         this.loadUrlParameters();
         this.setupEventListeners();
         this.renderInterface();
+    }
+
+    // Cargar configuración del webhook desde API route
+    async loadWebhookConfig() {
+        try {
+            const response = await fetch('/api/config');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.webhookUrl) {
+                this.webhookUrl = data.webhookUrl;
+                console.log('✅ Webhook URL cargada desde configuración');
+            } else {
+                throw new Error('No se recibió webhookUrl en la respuesta');
+            }
+        } catch (error) {
+            console.error('⚠️ Error cargando configuración del webhook:', error);
+            console.warn('Usando URL fallback. Configura WEBHOOK_URL en Vercel para que funcione correctamente.');
+            
+            // Fallback a URL placeholder si falla la carga
+            this.webhookUrl = 'https://tu-webhook-n8n.com/webhook/acuerdos-pago';
+        }
     }
 
     // Cargar parámetros de la URL
@@ -272,6 +301,14 @@ class PaymentAgreementCalculator {
         const confirmBtn = document.getElementById('confirm-agreement');
         const statusDiv = document.getElementById('webhook-status');
         
+        // Validar que el webhook URL esté configurado
+        if (!this.webhookUrl || this.webhookUrl.includes('tu-webhook-n8n.com')) {
+            statusDiv.style.display = 'block';
+            statusDiv.querySelector('.status-text').textContent = 'Error: Webhook no configurado. Configura WEBHOOK_URL en Vercel.';
+            statusDiv.querySelector('.status-icon').textContent = '❌';
+            return;
+        }
+        
         // Deshabilitar botón y mostrar loading
         confirmBtn.disabled = true;
         confirmBtn.innerHTML = '<span class="btn-text">Enviando...</span><span class="btn-icon">⏳</span>';
@@ -379,8 +416,9 @@ class PaymentAgreementCalculator {
 }
 
 // Inicializar calculadora cuando se carga la página
-document.addEventListener('DOMContentLoaded', () => {
-    new PaymentAgreementCalculator();
+document.addEventListener('DOMContentLoaded', async () => {
+    window.calculator = new PaymentAgreementCalculator();
+    // El init() es async y se ejecuta automáticamente en el constructor
 });
 
 // Función auxiliar para debugging (remover en producción)
