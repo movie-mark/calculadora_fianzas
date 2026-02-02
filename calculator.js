@@ -511,21 +511,20 @@ class PaymentAgreementCalculator {
         }
     }
     
+    // Saber si estamos en modo deuda grande (>= $1M) para usar el selector de fecha correcto
+    isLargeDebtVisible() {
+        const el = document.getElementById('large-debt-options');
+        return el && el.style.display !== 'none';
+    }
+
     // Actualizar valor de fecha oculto
     updateDateValue() {
-        // Intentar obtener valores del selector para deudas menores primero
-        let daySelect = document.getElementById('payment-day');
-        let monthSelect = document.getElementById('payment-month');
-        let yearSelect = document.getElementById('payment-year');
-        let hiddenInput = document.getElementById('first-payment-date');
-        
-        // Si no existe, usar el selector para deudas mayores
-        if (!daySelect || !monthSelect || !yearSelect) {
-            daySelect = document.getElementById('payment-day-large');
-            monthSelect = document.getElementById('payment-month-large');
-            yearSelect = document.getElementById('payment-year-large');
-            hiddenInput = document.getElementById('first-payment-date-large');
-        }
+        // Usar el selector que está visible: deudas >= $1M usan -large, sino el normal
+        const useLarge = this.isLargeDebtVisible();
+        const daySelect = document.getElementById(useLarge ? 'payment-day-large' : 'payment-day');
+        const monthSelect = document.getElementById(useLarge ? 'payment-month-large' : 'payment-month');
+        const yearSelect = document.getElementById(useLarge ? 'payment-year-large' : 'payment-year');
+        const hiddenInput = document.getElementById(useLarge ? 'first-payment-date-large' : 'first-payment-date');
         
         if (!daySelect || !monthSelect || !yearSelect) return;
         
@@ -669,19 +668,12 @@ class PaymentAgreementCalculator {
         // Validar que hay un plan seleccionado
         const hasPlan = this.selectedPlan !== null;
         
-        // Intentar obtener valores del selector para deudas menores primero
-        let daySelect = document.getElementById('payment-day');
-        let monthSelect = document.getElementById('payment-month');
-        let yearSelect = document.getElementById('payment-year');
-        let hiddenInput = document.getElementById('first-payment-date');
-        
-        // Si no existe, usar el selector para deudas mayores
-        if (!daySelect || !monthSelect || !yearSelect) {
-            daySelect = document.getElementById('payment-day-large');
-            monthSelect = document.getElementById('payment-month-large');
-            yearSelect = document.getElementById('payment-year-large');
-            hiddenInput = document.getElementById('first-payment-date-large');
-        }
+        // Usar el selector visible según tipo de deuda
+        const useLarge = this.isLargeDebtVisible();
+        const daySelect = document.getElementById(useLarge ? 'payment-day-large' : 'payment-day');
+        const monthSelect = document.getElementById(useLarge ? 'payment-month-large' : 'payment-month');
+        const yearSelect = document.getElementById(useLarge ? 'payment-year-large' : 'payment-year');
+        const hiddenInput = document.getElementById(useLarge ? 'first-payment-date-large' : 'first-payment-date');
         
         // Validar que todos los selectores de fecha tienen valor
         const hasDay = daySelect && daySelect.value !== '';
@@ -729,21 +721,13 @@ class PaymentAgreementCalculator {
 
     // Validar fecha antes de enviar
     validateDateBeforeSend() {
-        // Intentar obtener valores del selector para deudas menores primero
-        let daySelect = document.getElementById('payment-day');
-        let monthSelect = document.getElementById('payment-month');
-        let yearSelect = document.getElementById('payment-year');
-        let hiddenInput = document.getElementById('first-payment-date');
-        let dateError = document.getElementById('date-error');
-        
-        // Si no existe, usar el selector para deudas mayores
-        if (!daySelect || !monthSelect || !yearSelect) {
-            daySelect = document.getElementById('payment-day-large');
-            monthSelect = document.getElementById('payment-month-large');
-            yearSelect = document.getElementById('payment-year-large');
-            hiddenInput = document.getElementById('first-payment-date-large');
-            dateError = document.getElementById('date-error-large');
-        }
+        // Usar el selector visible según tipo de deuda
+        const useLarge = this.isLargeDebtVisible();
+        const daySelect = document.getElementById(useLarge ? 'payment-day-large' : 'payment-day');
+        const monthSelect = document.getElementById(useLarge ? 'payment-month-large' : 'payment-month');
+        const yearSelect = document.getElementById(useLarge ? 'payment-year-large' : 'payment-year');
+        const hiddenInput = document.getElementById(useLarge ? 'first-payment-date-large' : 'first-payment-date');
+        const dateError = document.getElementById(useLarge ? 'date-error-large' : 'date-error');
         
         // Validar que todos los selectores tienen valor
         const hasDay = daySelect && daySelect.value !== '';
