@@ -682,30 +682,30 @@ class PaymentAgreementCalculator {
         const hasDate = hasDay && hasMonth && hasYear;
         
         if (hasPlan && hasDate) {
-            // Validar que la fecha no sea en el pasado
-            if (hiddenInput && hiddenInput.value) {
-                const selectedDate = new Date(hiddenInput.value);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                if (selectedDate >= today) {
-                    this.firstPaymentDate = hiddenInput.value;
-                    confirmBtn.disabled = false;
-                    if (dateError) {
-                        dateError.style.display = 'none';
-                    }
-                } else {
-                    confirmBtn.disabled = true;
-                    if (dateError) {
-                        dateError.textContent = 'La fecha del primer pago no puede ser en el pasado';
-                        dateError.style.display = 'block';
-                    }
-                    return;
-                }
-            } else {
+            // Sincronizar input oculto desde selectores por si no se actualizó antes
+            const day = daySelect.value;
+            const month = monthSelect.value;
+            const year = yearSelect.value;
+            const dateValue = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            if (hiddenInput) hiddenInput.value = dateValue;
+            this.firstPaymentDate = dateValue;
+            
+            // Comparar como fecha local (medianoche) para evitar problemas de zona horaria
+            const selectedDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            selectedDate.setHours(0, 0, 0, 0);
+            
+            if (selectedDate >= today) {
                 confirmBtn.disabled = false;
                 if (dateError) {
                     dateError.style.display = 'none';
+                }
+            } else {
+                confirmBtn.disabled = true;
+                if (dateError) {
+                    dateError.textContent = 'La fecha del primer pago no puede ser en el pasado';
+                    dateError.style.display = 'block';
                 }
             }
         } else {
@@ -729,12 +729,11 @@ class PaymentAgreementCalculator {
         const hiddenInput = document.getElementById(useLarge ? 'first-payment-date-large' : 'first-payment-date');
         const dateError = document.getElementById(useLarge ? 'date-error-large' : 'date-error');
         
-        // Validar que todos los selectores tienen valor
         const hasDay = daySelect && daySelect.value !== '';
         const hasMonth = monthSelect && monthSelect.value !== '';
         const hasYear = yearSelect && yearSelect.value !== '';
         
-        if (!hasDay || !hasMonth || !hasYear || !hiddenInput || !hiddenInput.value || hiddenInput.value.trim() === '') {
+        if (!hasDay || !hasMonth || !hasYear) {
             if (dateError) {
                 dateError.textContent = 'Por favor selecciona la fecha del primer pago (día, mes y año)';
                 dateError.style.display = 'block';
@@ -742,10 +741,18 @@ class PaymentAgreementCalculator {
             return false;
         }
         
-        // Validar que la fecha no sea en el pasado
-        const selectedDate = new Date(hiddenInput.value);
+        const day = daySelect.value;
+        const month = monthSelect.value;
+        const year = yearSelect.value;
+        const dateValue = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        if (hiddenInput) hiddenInput.value = dateValue;
+        this.firstPaymentDate = dateValue;
+        
+        // Comparar como fecha local para evitar problemas de zona horaria
+        const selectedDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
         
         if (selectedDate < today) {
             if (dateError) {
@@ -755,7 +762,6 @@ class PaymentAgreementCalculator {
             return false;
         }
         
-        this.firstPaymentDate = hiddenInput.value;
         if (dateError) {
             dateError.style.display = 'none';
         }
