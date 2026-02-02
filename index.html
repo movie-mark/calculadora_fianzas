@@ -72,11 +72,50 @@
                 
                 <!-- Para Deudas Menores a $1M -->
                 <div id="small-debt-options" style="display: none;">
-                    <div class="slider-container">
-                        <label for="installments-slider">Número de Cuotas (máximo 12 meses):</label>
-                        <div class="slider-wrapper">
-                            <input type="range" id="installments-slider" min="1" max="12" value="1">
-                            <span id="installments-value">1 cuota</span>
+                    <div class="slider-and-date-wrapper">
+                        <div class="slider-container">
+                            <label for="installments-slider">Número de Cuotas (máximo 12 meses):</label>
+                            <div class="slider-wrapper">
+                                <input type="range" id="installments-slider" min="1" max="12" value="1">
+                                <span id="installments-value">1 cuota</span>
+                            </div>
+                        </div>
+                        <!-- Selector de Fecha del Primer Pago -->
+                        <div class="payment-date-container-inline">
+                            <label class="date-label-inline">
+                                Fecha del Primer Pago <span class="required">*</span>
+                            </label>
+                            <div class="date-selector-wrapper">
+                                <select id="payment-day" class="date-select">
+                                    <option value="">Día</option>
+                                </select>
+                                <select id="payment-month" class="date-select">
+                                    <option value="">Mes</option>
+                                    <option value="01">Enero</option>
+                                    <option value="02">Febrero</option>
+                                    <option value="03">Marzo</option>
+                                    <option value="04">Abril</option>
+                                    <option value="05">Mayo</option>
+                                    <option value="06">Junio</option>
+                                    <option value="07">Julio</option>
+                                    <option value="08">Agosto</option>
+                                    <option value="09">Septiembre</option>
+                                    <option value="10">Octubre</option>
+                                    <option value="11">Noviembre</option>
+                                    <option value="12">Diciembre</option>
+                                </select>
+                                <select id="payment-year" class="date-select">
+                                    <option value="">Año</option>
+                                </select>
+                            </div>
+                            <input 
+                                type="hidden" 
+                                id="first-payment-date" 
+                                name="first-payment-date"
+                            >
+                            <span class="date-error" id="date-error" style="display: none;">
+                                Por favor selecciona la fecha del primer pago
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -127,6 +166,44 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Selector de Fecha del Primer Pago (compartido para deudas >= $1M) -->
+                    <div class="payment-date-container-inline" id="large-debt-date-selector">
+                        <label class="date-label-inline">
+                            Fecha del Primer Pago <span class="required">*</span>
+                        </label>
+                        <div class="date-selector-wrapper">
+                            <select id="payment-day-large" class="date-select">
+                                <option value="">Día</option>
+                            </select>
+                            <select id="payment-month-large" class="date-select">
+                                <option value="">Mes</option>
+                                <option value="01">Enero</option>
+                                <option value="02">Febrero</option>
+                                <option value="03">Marzo</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Mayo</option>
+                                <option value="06">Junio</option>
+                                <option value="07">Julio</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                            <select id="payment-year-large" class="date-select">
+                                <option value="">Año</option>
+                            </select>
+                        </div>
+                        <input 
+                            type="hidden" 
+                            id="first-payment-date-large" 
+                            name="first-payment-date-large"
+                        >
+                        <span class="date-error" id="date-error-large" style="display: none;">
+                            Por favor selecciona la fecha del primer pago
+                        </span>
+                    </div>
                 </div>
             </section>
 
@@ -167,6 +244,16 @@
                     <div class="result-item">
                         <span class="label">Número de Cuotas:</span>
                         <span class="value" id="numero-cuotas">0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Fecha del Primer Pago:</span>
+                        <span class="value" id="fecha-primer-pago">-</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="label">Día de Pago Mensual:</span>
+                        <span class="value" id="dia-pago-mensual">-</span>
                     </div>
                 </div>
             </section>

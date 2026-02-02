@@ -5,13 +5,16 @@ class PaymentAgreementCalculator {
         this.selectedPlan = null;
         this.installments = 1;
         this.webhookUrl = null; // Se cargará desde el API route
+        this.firstPaymentDate = null; // Fecha del primer pago
         
         this.init();
     }
 
     async init() {
-        // Cargar configuración del webhook primero
-        await this.loadWebhookConfig();
+        // Cargar configuración del webhook (no bloquear si falla)
+        this.loadWebhookConfig().catch(err => {
+            console.warn('Configuración de webhook no disponible, usando fallback');
+        });
         
         this.loadUrlParameters();
         this.setupEventListeners();
@@ -84,6 +87,14 @@ class PaymentAgreementCalculator {
         const errorDiv = document.getElementById('error-message');
         const paramsList = document.getElementById('missing-params');
         
+        if (!errorDiv || !paramsList) {
+            console.error('Error: No se encontraron los elementos para mostrar el error');
+            return;
+        }
+        
+        // Limpiar lista anterior
+        paramsList.innerHTML = '';
+        
         missingParams.forEach(param => {
             const li = document.createElement('li');
             li.textContent = `• ${param}`;
@@ -91,6 +102,12 @@ class PaymentAgreementCalculator {
         });
 
         errorDiv.style.display = 'block';
+        
+        // Asegurarse de que el contenido principal esté oculto
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            mainContent.style.display = 'none';
+        }
     }
 
     // Configurar event listeners
@@ -115,6 +132,9 @@ class PaymentAgreementCalculator {
             });
         }
 
+        // Selector de fecha del primer pago
+        this.setupDateSelector();
+
         // Botones de opciones de pago para deudas mayores a $1M
         const paymentOptions = document.querySelectorAll('.payment-option');
         paymentOptions.forEach(option => {
@@ -130,6 +150,10 @@ class PaymentAgreementCalculator {
         const confirmBtn = document.getElementById('confirm-agreement');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', () => {
+                // Validar fecha antes de enviar
+                if (!this.validateDateBeforeSend()) {
+                    return;
+                }
                 this.sendAgreement();
             });
         }
@@ -138,21 +162,36 @@ class PaymentAgreementCalculator {
     // Renderizar interfaz según el tipo de deuda
     renderInterface() {
         const totalDebt = this.debtData.capital + this.debtData.intereses + this.debtData.costos;
+        const largeDateSelector = document.getElementById('large-debt-date-selector');
         
         if (totalDebt >= 1000000) {
             // Deuda mayor o igual a $1M - mostrar opciones de descuento
             document.getElementById('large-debt-options').style.display = 'block';
             document.getElementById('small-debt-options').style.display = 'none';
+            // Mostrar selector de fecha para deudas mayores
+            if (largeDateSelector) {
+                largeDateSelector.style.display = 'block';
+            }
         } else {
             // Deuda menor a $1M - mostrar slider de cuotas
             document.getElementById('large-debt-options').style.display = 'none';
             document.getElementById('small-debt-options').style.display = 'block';
             this.selectedPlan = 'custom';
+            // Ocultar selector de fecha para deudas mayores
+            if (largeDateSelector) {
+                largeDateSelector.style.display = 'none';
+            }
+            // Actualizar cálculos y validar botón para deudas menores
+            this.updateCalculations();
+            this.validateAndEnableButton();
         }
 
         // Mostrar información de deuda
         this.displayDebtInfo();
         this.displayAdditionalInfo();
+        
+        // Actualizar información de fecha en el resumen
+        this.updateDateInfo();
     }
 
     // Mostrar información de deuda
@@ -236,6 +275,286 @@ class PaymentAgreementCalculator {
         }
     }
 
+    // Configurar selector de fecha
+    setupDateSelector() {
+        // Configurar ambos selectores (para deudas menores y mayores)
+        this.setupSingleDateSelector('payment-day', 'payment-month', 'payment-year', 'first-payment-date');
+        this.setupSingleDateSelector('payment-day-large', 'payment-month-large', 'payment-year-large', 'first-payment-date-large');
+    }
+    
+    // Configurar un selector de fecha individual
+    setupSingleDateSelector(dayId, monthId, yearId, hiddenInputId) {
+        const daySelect = document.getElementById(dayId);
+        const monthSelect = document.getElementById(monthId);
+        const yearSelect = document.getElementById(yearId);
+        const hiddenInput = document.getElementById(hiddenInputId);
+        
+        if (!daySelect || !monthSelect || !yearSelect) return;
+        
+        // Obtener fecha actual
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth() + 1;
+        const currentDay = today.getDate();
+        
+        // Llenar selector de años (hasta 5 años adelante)
+        for (let year = currentYear; year <= currentYear + 5; year++) {
+            const option = document.createElement('option');
+            option.value = year.toString();
+            option.textContent = year.toString();
+            yearSelect.appendChild(option);
+        }
+        
+        // Función para actualizar días según mes y año seleccionados
+        const updateDays = () => {
+            const selectedYear = parseInt(yearSelect.value);
+            const selectedMonth = parseInt(monthSelect.value);
+            
+            if (!selectedYear || !selectedMonth) {
+                daySelect.innerHTML = '<option value="">Día</option>';
+                daySelect.value = '';
+                return;
+            }
+            
+            // Obtener días del mes
+            const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+            
+            // Guardar el valor actual del día ANTES de limpiar las opciones
+            const currentDayValue = daySelect.value;
+            const currentDayNum = currentDayValue ? parseInt(currentDayValue) : null;
+            
+            // Limpiar las opciones
+            daySelect.innerHTML = '<option value="">Día</option>';
+            
+            // Determinar día mínimo (si es el mes/año actual, no permitir días pasados)
+            let minDay = 1;
+            if (selectedYear === currentYear && selectedMonth === currentMonth) {
+                minDay = currentDay;
+            }
+            
+            // Llenar los días disponibles
+            for (let day = minDay; day <= daysInMonth; day++) {
+                const option = document.createElement('option');
+                const dayStr = day.toString().padStart(2, '0');
+                option.value = dayStr;
+                option.textContent = day.toString();
+                daySelect.appendChild(option);
+            }
+            
+            // Restaurar el día seleccionado si era válido
+            if (currentDayNum && currentDayNum >= minDay && currentDayNum <= daysInMonth) {
+                // Restaurar el valor anterior si sigue siendo válido
+                const dayStrToRestore = currentDayNum.toString().padStart(2, '0');
+                if (daySelect.querySelector(`option[value="${dayStrToRestore}"]`)) {
+                    daySelect.value = dayStrToRestore;
+                }
+            } else {
+                // Si no había día o no es válido, seleccionar el mínimo disponible
+                if (daySelect.options.length > 1) {
+                    daySelect.value = minDay.toString().padStart(2, '0');
+                }
+            }
+        };
+        
+        // Actualizar días cuando cambie mes o año
+        monthSelect.addEventListener('change', () => {
+            const oldDayValue = daySelect.value;
+            updateDays();
+            // Si el día anterior era válido y sigue disponible, restaurarlo
+            if (oldDayValue && daySelect.querySelector(`option[value="${oldDayValue}"]`)) {
+                daySelect.value = oldDayValue;
+            }
+            this.updateDateValue();
+        });
+        
+        yearSelect.addEventListener('change', () => {
+            const oldDayValue = daySelect.value;
+            updateDays();
+            // Si el día anterior era válido y sigue disponible, restaurarlo
+            if (oldDayValue && daySelect.querySelector(`option[value="${oldDayValue}"]`)) {
+                daySelect.value = oldDayValue;
+            }
+            this.updateDateValue();
+        });
+        
+        // Actualizar fecha cuando cambie el día
+        daySelect.addEventListener('change', (e) => {
+            // Prevenir propagación de eventos
+            e.stopPropagation();
+            
+            // Obtener el valor seleccionado directamente del evento
+            const selectedValue = e.target.value;
+            
+            // Si hay un valor seleccionado, actualizar
+            if (selectedValue) {
+                // Asegurarse de que el valor se establece correctamente
+                daySelect.value = selectedValue;
+                
+                // Actualizar el valor de la fecha
+                this.updateDateValue();
+                
+                // Verificar nuevamente que el valor se mantuvo (defensa contra reseteos)
+                if (daySelect.value !== selectedValue && selectedValue) {
+                    setTimeout(() => {
+                        daySelect.value = selectedValue;
+                        this.updateDateValue();
+                    }, 10);
+                }
+            }
+        }, false);
+        
+        // Establecer valores por defecto (hoy)
+        yearSelect.value = currentYear.toString();
+        monthSelect.value = currentMonth.toString().padStart(2, '0');
+        // Actualizar días disponibles
+        updateDays();
+        // updateDays() ya debería haber seleccionado el día actual, pero nos aseguramos
+        if (!daySelect.value) {
+            daySelect.value = currentDay.toString().padStart(2, '0');
+        }
+        
+        // Inicializar fecha
+        this.updateDateValue();
+        this.updateDateInfo();
+    }
+    
+    // Sincronizar valores entre ambos selectores
+    syncDateSelectors(sourceId, targetId) {
+        // Solo sincronizar si los IDs son diferentes
+        if (sourceId === targetId) return;
+        
+        const sourceDay = document.getElementById(sourceId === 'payment-day' ? 'payment-day' : 'payment-day-large');
+        const sourceMonth = document.getElementById(sourceId === 'payment-day' ? 'payment-month' : 'payment-month-large');
+        const sourceYear = document.getElementById(sourceId === 'payment-day' ? 'payment-year' : 'payment-year-large');
+        
+        const targetDay = document.getElementById(targetId === 'payment-day' ? 'payment-day' : 'payment-day-large');
+        const targetMonth = document.getElementById(targetId === 'payment-day' ? 'payment-month' : 'payment-month-large');
+        const targetYear = document.getElementById(targetId === 'payment-day' ? 'payment-year' : 'payment-year-large');
+        
+        if (!sourceDay || !sourceMonth || !sourceYear || !targetDay || !targetMonth || !targetYear) return;
+        
+        // Solo sincronizar si el selector fuente tiene valores
+        if (!sourceDay.value || !sourceMonth.value || !sourceYear.value) return;
+        
+        // Sincronizar año y mes primero
+        if (targetYear.value !== sourceYear.value) {
+            targetYear.value = sourceYear.value;
+        }
+        if (targetMonth.value !== sourceMonth.value) {
+            targetMonth.value = sourceMonth.value;
+            // Actualizar días disponibles cuando cambia el mes
+            const year = parseInt(targetYear.value);
+            const month = parseInt(targetMonth.value);
+            if (year && month) {
+                this.updateDaysForSelector(targetDay, targetMonth, targetYear);
+            }
+        } else if (targetYear.value !== sourceYear.value) {
+            // Si solo cambió el año, actualizar días también
+            const year = parseInt(targetYear.value);
+            const month = parseInt(targetMonth.value);
+            if (year && month) {
+                this.updateDaysForSelector(targetDay, targetMonth, targetYear);
+            }
+        }
+        
+        // Sincronizar día si está disponible
+        if (targetDay.querySelector(`option[value="${sourceDay.value}"]`)) {
+            targetDay.value = sourceDay.value;
+        }
+    }
+    
+    // Actualizar días disponibles para un selector
+    updateDaysForSelector(daySelect, monthSelect, yearSelect) {
+        const year = parseInt(yearSelect.value);
+        const month = parseInt(monthSelect.value);
+        
+        if (!year || !month) {
+            daySelect.innerHTML = '<option value="">Día</option>';
+            daySelect.value = '';
+            return;
+        }
+        
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth() + 1;
+        const currentDay = today.getDate();
+        
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const selectedDayStr = daySelect.value;
+        const selectedDay = selectedDayStr ? parseInt(selectedDayStr) : null;
+        
+        daySelect.innerHTML = '<option value="">Día</option>';
+        
+        let minDay = 1;
+        if (year === currentYear && month === currentMonth) {
+            minDay = currentDay;
+        }
+        
+        for (let day = minDay; day <= daysInMonth; day++) {
+            const option = document.createElement('option');
+            const dayStr = day.toString().padStart(2, '0');
+            option.value = dayStr;
+            option.textContent = day.toString();
+            daySelect.appendChild(option);
+        }
+        
+        // Restaurar día seleccionado si está disponible, o seleccionar el mínimo
+        if (selectedDay && selectedDay >= minDay && selectedDay <= daysInMonth) {
+            const dayStrToRestore = selectedDay.toString().padStart(2, '0');
+            if (daySelect.querySelector(`option[value="${dayStrToRestore}"]`)) {
+                daySelect.value = dayStrToRestore;
+            } else {
+                daySelect.value = minDay.toString().padStart(2, '0');
+            }
+        } else {
+            daySelect.value = minDay.toString().padStart(2, '0');
+        }
+    }
+    
+    // Actualizar valor de fecha oculto
+    updateDateValue() {
+        // Intentar obtener valores del selector para deudas menores primero
+        let daySelect = document.getElementById('payment-day');
+        let monthSelect = document.getElementById('payment-month');
+        let yearSelect = document.getElementById('payment-year');
+        let hiddenInput = document.getElementById('first-payment-date');
+        
+        // Si no existe, usar el selector para deudas mayores
+        if (!daySelect || !monthSelect || !yearSelect) {
+            daySelect = document.getElementById('payment-day-large');
+            monthSelect = document.getElementById('payment-month-large');
+            yearSelect = document.getElementById('payment-year-large');
+            hiddenInput = document.getElementById('first-payment-date-large');
+        }
+        
+        if (!daySelect || !monthSelect || !yearSelect) return;
+        
+        const day = daySelect.value;
+        const month = monthSelect.value;
+        const year = yearSelect.value;
+        
+        if (day && month && year) {
+            const dateValue = `${year}-${month}-${day}`;
+            this.firstPaymentDate = dateValue;
+            
+            // Actualizar ambos inputs ocultos si existen
+            const hiddenInput1 = document.getElementById('first-payment-date');
+            const hiddenInput2 = document.getElementById('first-payment-date-large');
+            if (hiddenInput1) hiddenInput1.value = dateValue;
+            if (hiddenInput2) hiddenInput2.value = dateValue;
+            
+            this.validateAndEnableButton();
+            this.updateDateInfo();
+        } else {
+            const hiddenInput1 = document.getElementById('first-payment-date');
+            const hiddenInput2 = document.getElementById('first-payment-date-large');
+            if (hiddenInput1) hiddenInput1.value = '';
+            if (hiddenInput2) hiddenInput2.value = '';
+            this.firstPaymentDate = null;
+            this.validateAndEnableButton();
+        }
+    }
+
 
     // Actualizar cálculos
     updateCalculations() {
@@ -286,14 +605,177 @@ class PaymentAgreementCalculator {
         document.getElementById('total-ahorro').textContent = this.formatCurrency(results.totalSaved);
         document.getElementById('valor-cuota').textContent = this.formatCurrency(results.installmentValue);
         document.getElementById('numero-cuotas').textContent = results.installments.toString();
+        
+        // Actualizar información de fecha
+        this.updateDateInfo();
+    }
+    
+    // Actualizar información de fecha en el resumen
+    updateDateInfo() {
+        const fechaPrimerPagoEl = document.getElementById('fecha-primer-pago');
+        const diaPagoMensualEl = document.getElementById('dia-pago-mensual');
+        
+        if (!this.firstPaymentDate) {
+            if (fechaPrimerPagoEl) fechaPrimerPagoEl.textContent = '-';
+            if (diaPagoMensualEl) diaPagoMensualEl.textContent = '-';
+            return;
+        }
+        
+        try {
+            // Formatear fecha del primer pago
+            const fecha = new Date(this.firstPaymentDate + 'T00:00:00');
+            if (fechaPrimerPagoEl) {
+                fechaPrimerPagoEl.textContent = this.formatDate(fecha);
+            }
+            
+            // Extraer día para mostrar "los X de cada mes"
+            const day = fecha.getDate();
+            if (diaPagoMensualEl) {
+                diaPagoMensualEl.textContent = `Los días ${day} de cada mes`;
+            }
+        } catch (error) {
+            console.error('Error formateando fecha:', error);
+            if (fechaPrimerPagoEl) fechaPrimerPagoEl.textContent = '-';
+            if (diaPagoMensualEl) diaPagoMensualEl.textContent = '-';
+        }
+    }
+    
+    // Formatear fecha en español
+    formatDate(date) {
+        const meses = [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+        
+        const dia = date.getDate();
+        const mes = meses[date.getMonth()];
+        const año = date.getFullYear();
+        
+        return `${dia} de ${mes} de ${año}`;
     }
 
     // Habilitar botón de confirmar
     enableConfirmButton() {
+        this.validateAndEnableButton();
+    }
+
+    // Validar y habilitar botón de confirmar
+    validateAndEnableButton() {
         const confirmBtn = document.getElementById('confirm-agreement');
-        if (confirmBtn) {
-            confirmBtn.disabled = false;
+        const dateError = document.getElementById('date-error') || document.getElementById('date-error-large');
+        
+        if (!confirmBtn) return;
+        
+        // Validar que hay un plan seleccionado
+        const hasPlan = this.selectedPlan !== null;
+        
+        // Intentar obtener valores del selector para deudas menores primero
+        let daySelect = document.getElementById('payment-day');
+        let monthSelect = document.getElementById('payment-month');
+        let yearSelect = document.getElementById('payment-year');
+        let hiddenInput = document.getElementById('first-payment-date');
+        
+        // Si no existe, usar el selector para deudas mayores
+        if (!daySelect || !monthSelect || !yearSelect) {
+            daySelect = document.getElementById('payment-day-large');
+            monthSelect = document.getElementById('payment-month-large');
+            yearSelect = document.getElementById('payment-year-large');
+            hiddenInput = document.getElementById('first-payment-date-large');
         }
+        
+        // Validar que todos los selectores de fecha tienen valor
+        const hasDay = daySelect && daySelect.value !== '';
+        const hasMonth = monthSelect && monthSelect.value !== '';
+        const hasYear = yearSelect && yearSelect.value !== '';
+        const hasDate = hasDay && hasMonth && hasYear;
+        
+        if (hasPlan && hasDate) {
+            // Validar que la fecha no sea en el pasado
+            if (hiddenInput && hiddenInput.value) {
+                const selectedDate = new Date(hiddenInput.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate >= today) {
+                    this.firstPaymentDate = hiddenInput.value;
+                    confirmBtn.disabled = false;
+                    if (dateError) {
+                        dateError.style.display = 'none';
+                    }
+                } else {
+                    confirmBtn.disabled = true;
+                    if (dateError) {
+                        dateError.textContent = 'La fecha del primer pago no puede ser en el pasado';
+                        dateError.style.display = 'block';
+                    }
+                    return;
+                }
+            } else {
+                confirmBtn.disabled = false;
+                if (dateError) {
+                    dateError.style.display = 'none';
+                }
+            }
+        } else {
+            confirmBtn.disabled = true;
+            if (!hasDate && dateError && hasPlan) {
+                dateError.textContent = 'Por favor selecciona la fecha del primer pago (día, mes y año)';
+                dateError.style.display = 'block';
+            } else if (dateError) {
+                dateError.style.display = 'none';
+            }
+        }
+    }
+
+    // Validar fecha antes de enviar
+    validateDateBeforeSend() {
+        // Intentar obtener valores del selector para deudas menores primero
+        let daySelect = document.getElementById('payment-day');
+        let monthSelect = document.getElementById('payment-month');
+        let yearSelect = document.getElementById('payment-year');
+        let hiddenInput = document.getElementById('first-payment-date');
+        let dateError = document.getElementById('date-error');
+        
+        // Si no existe, usar el selector para deudas mayores
+        if (!daySelect || !monthSelect || !yearSelect) {
+            daySelect = document.getElementById('payment-day-large');
+            monthSelect = document.getElementById('payment-month-large');
+            yearSelect = document.getElementById('payment-year-large');
+            hiddenInput = document.getElementById('first-payment-date-large');
+            dateError = document.getElementById('date-error-large');
+        }
+        
+        // Validar que todos los selectores tienen valor
+        const hasDay = daySelect && daySelect.value !== '';
+        const hasMonth = monthSelect && monthSelect.value !== '';
+        const hasYear = yearSelect && yearSelect.value !== '';
+        
+        if (!hasDay || !hasMonth || !hasYear || !hiddenInput || !hiddenInput.value || hiddenInput.value.trim() === '') {
+            if (dateError) {
+                dateError.textContent = 'Por favor selecciona la fecha del primer pago (día, mes y año)';
+                dateError.style.display = 'block';
+            }
+            return false;
+        }
+        
+        // Validar que la fecha no sea en el pasado
+        const selectedDate = new Date(hiddenInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            if (dateError) {
+                dateError.textContent = 'La fecha del primer pago no puede ser en el pasado';
+                dateError.style.display = 'block';
+            }
+            return false;
+        }
+        
+        this.firstPaymentDate = hiddenInput.value;
+        if (dateError) {
+            dateError.style.display = 'none';
+        }
+        return true;
     }
 
     // Enviar acuerdo vía webhook
@@ -400,6 +882,7 @@ class PaymentAgreementCalculator {
             },
             uuidDeudor: this.debtData.uuid,
             urlOrigen: window.location.href,
+            fechaPrimerPago: this.firstPaymentDate,
             timestamp: Date.now()
         };
     }
